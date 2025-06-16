@@ -41,7 +41,9 @@ export const Header: FC<HeaderProps> = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!title.trim()) {
+    const titleTrimed = title.trim();
+
+    if (!titleTrimed) {
       setErrorMessage(ErrorMessages.EmptyTitle);
 
       return;
@@ -52,7 +54,7 @@ export const Header: FC<HeaderProps> = ({
 
     try {
       const newTodo = await postTodo({
-        title: title.trim(),
+        title: titleTrimed,
         userId: USER_ID,
       });
 
