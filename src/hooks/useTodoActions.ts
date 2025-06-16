@@ -41,28 +41,34 @@ export const useTodoActions = (
 
       addToProcessing(completedIds);
 
-      const results = await Promise.allSettled(
-        completedIds.map(id =>
-          deleteTodo(id).then(() => ({ id, success: true })),
-        ),
-      );
+      try {
+        const results = await Promise.allSettled(
+          completedIds.map(id =>
+            deleteTodo(id).then(() => ({ id, success: true })),
+          ),
+        );
 
-      const successfulIds = results
-        .filter(
-          (res): res is PromiseFulfilledResult<{ id: number; success: true }> =>
-            res.status === 'fulfilled',
-        )
-        .map(res => res.value.id);
+        const successfulIds = results
+          .filter(
+            (
+              res,
+            ): res is PromiseFulfilledResult<{ id: number; success: true }> =>
+              res.status === 'fulfilled',
+          )
+          .map(res => res.value.id);
 
-      const isSomeFailed = results.some(res => res.status === 'rejected');
+        const isSomeFailed = results.some(res => res.status === 'rejected');
 
-      if (isSomeFailed) {
+        if (isSomeFailed) {
+          setErrorMessage(ErrorMessages.DeleteFailed);
+        }
+
+        setTodos(prev => prev.filter(todo => !successfulIds.includes(todo.id)));
+      } catch (err) {
         setErrorMessage(ErrorMessages.DeleteFailed);
+      } finally {
+        removeFromProcessing(completedIds);
       }
-
-      setTodos(prev => prev.filter(todo => !successfulIds.includes(todo.id)));
-
-      removeFromProcessing(completedIds);
     },
     [setTodos, setErrorMessage],
   );
